@@ -1,0 +1,10 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    ruby-poker (1.0.1)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  ruby-poker
