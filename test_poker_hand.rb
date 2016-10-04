@@ -39,5 +39,10 @@ class TestPokerHand < MiniTest::Unit::TestCase
     hand = PokerHand.new('Ad 2h 3c 4d 8h')
     assert(hand.gutshot?,"A Low gutshot")
   end
+
+  def test_all_ranks
+    hand = PokerHand.new('9h 9c 8d 7h 6d 5c')
+    puts hand.all_ranks
+  end
 end
 

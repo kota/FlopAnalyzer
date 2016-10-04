@@ -83,9 +83,19 @@ class PokerHand
     end
     false
   end
+
+  def all_ranks
+    OPS.map { |op|
+       (method(op[1]).call()) ? op[0] : nil
+    }.compact
+  end
 end
 
 class FlopAnalyzer
+  CARDS = %w(A K Q J T 9 8 7 6 5 4 3 2).product(%w(s h d c)).map { |pair| pair.join('') }
+
+  GOOD_HANDS = ['Royal Flush', 'Straight Flush', 'Four of a kind', 'Full house', 'Flush', 'Straight', 'Three of a kind', 'Two pair']
+  DECENT_HANDS = ['Pair', 'Flush Draw', 'OESD']
   
   def initialize(flop)
     @flop = PokerHand.new(flop)
@@ -100,14 +110,35 @@ class FlopAnalyzer
       rescue => e
         next
       end
-      results[hand.hand_rating] ||= []
-      results[hand.hand_rating] << hole_cards.by_face.just_cards
+      ranks = hand.all_ranks
+      category = ranks.inject(0) do |cat, rank|
+
+        if GOOD_HANDS.include?(rank)
+          break 2
+        elsif DECENT_HANDS.include?(rank) && cat < 1
+          cat = 1
+        end
+        cat
+      end
+      results[hole_cards.by_face.just_cards] = { ranks: ranks, category: category }
     end
 
     results
+  
+    group_by_category = [[],[],[]]
+    results.each do |hole_card, result| 
+      group_by_category[result[:category]] << hole_card
+    end
+
+    range_combinations = range.hands.size.to_f
+    combinations = group_by_category.map { |hands| (hands.size / range_combinations).round(3) }
+    { flop: @flop.just_cards, good_hands: group_by_category[2].size, decent_hands: group_by_category[1].size, trash_hands: group_by_category[0].size,
+      good_hands_ratio: combinations[2], decent_hands_ratio: combinations[1], trash_hands_ratio: combinations[0] }
   end
 end
 
-range = HandRange.new('AA,KK,QQ,AKs,AQs,98s,67s,33,T9s,QJo')
-analyzer = FlopAnalyzer.new("As 8s 9s")
-puts analyzer.analyze(range)
+FlopAnalyzer::CARDS.combination(3).first(100).each do |flop|
+  range = HandRange.new('AA,KK,QQ,AKs,AQs,98s,67s,33,T9s,QJo')
+  analyzer = FlopAnalyzer.new(flop)
+  puts analyzer.analyze(range)
+end

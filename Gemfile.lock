@@ -2,9 +2,11 @@ GEM
   remote: https://rubygems.org/
   specs:
     ruby-poker (1.0.1)
+    ruby-prof (0.16.2)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
   ruby-poker
+  ruby-prof
